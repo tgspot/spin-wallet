@@ -1,92 +1,86 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Code to run when the DOM is fully loaded
+    // Toggle between login and register forms
+    const showRegisterForm = document.getElementById('show-register-form');
+    const showLoginForm = document.getElementById('show-login-form');
+    const loginFormContainer = document.querySelector('.form-container:nth-child(1)');
+    const registerFormContainer = document.querySelector('.form-container:nth-child(2)');
 
-    // Example: Toggle mobile menu
-    const navToggle = document.querySelector('.nav-toggle');
-    const navMenu = document.querySelector('nav ul');
-
-    navToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-    });
-
-    // Example: Smooth scroll to anchor links
-    const anchorLinks = document.querySelectorAll('a[href^="#"]');
-
-    anchorLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            const targetId = this.getAttribute('href').substring(1);
-            const targetElement = document.getElementById(targetId);
-
-            if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-
-    // Example: Handle form submission
-    const form = document.querySelector('form');
-
-    form.addEventListener('submit', function(e) {
+    showRegisterForm.addEventListener('click', function(e) {
         e.preventDefault();
+        loginFormContainer.style.display = 'none';
+        registerFormContainer.style.display = 'block';
+    });
 
-        // Example: Validate form inputs
-        const emailInput = document.querySelector('#email');
-        const emailValue = emailInput.value.trim();
+    showLoginForm.addEventListener('click', function(e) {
+        e.preventDefault();
+        loginFormContainer.style.display = 'block';
+        registerFormContainer.style.display = 'none';
+    });
 
-        if (!isValidEmail(emailValue)) {
-            // Example: Show error message
-            showError('Please enter a valid email address.');
-            return;
+    // Handle form submission for login
+    const loginForm = document.getElementById('login-form');
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        // Add your login logic here (e.g., API call)
+    });
+
+    // Handle form submission for register
+    const registerForm = document.getElementById('register-form');
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        // Add your register logic here (e.g., API call)
+    });
+
+    // Slot game logic
+    const spinButton = document.getElementById('spin-button');
+    const slots = document.querySelectorAll('.slot');
+    const result = document.getElementById('result');
+
+    spinButton.addEventListener('click', function() {
+        const values = Array.from(slots).map(() => Math.floor(Math.random() * 3));
+        slots.forEach((slot, index) => {
+            slot.textContent = values[index];
+        });
+
+        if (values.every(val => val === values[0])) {
+            result.textContent = 'You win!';
+        } else {
+            result.textContent = 'Try again.';
         }
+    });
 
-        // Example: Submit form data
-        const formData = new FormData(this);
+    // Fetch user balance and transactions
+    const balanceElement = document.getElementById('balance');
+    const transactionsElement = document.getElementById('transactions');
 
-        fetch('https://api.example.com/submit', {
-            method: 'POST',
-            body: formData
+    function fetchDashboardData() {
+        // Example: Fetch data from API
+        fetch('https://api.example.com/dashboard', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer YOUR_TOKEN_HERE'
+            }
         })
         .then(response => response.json())
         .then(data => {
-            // Example: Handle successful form submission
-            console.log('Form submission successful:', data);
-            showSuccess('Form submitted successfully!');
+            balanceElement.textContent = `$${data.balance.toFixed(2)}`;
+            transactionsElement.innerHTML = '';
+            data.transactions.forEach(transaction => {
+                const li = document.createElement('li');
+                li.textContent = `${transaction.date}: $${transaction.amount.toFixed(2)}`;
+                transactionsElement.appendChild(li);
+            });
         })
         .catch(error => {
-            // Example: Handle errors
-            console.error('Error submitting form:', error);
-            showError('Failed to submit form. Please try again.');
+            console.error('Error fetching dashboard data:', error);
         });
-    });
-
-    // Example: Utility function for email validation
-    function isValidEmail(email) {
-        // Implement your email validation logic
-        const re = /\S+@\S+\.\S+/;
-        return re.test(String(email).toLowerCase());
     }
 
-    // Example: Utility function to show error message
-    function showError(message) {
-        const errorElement = document.querySelector('.error-message');
-        errorElement.textContent = message;
-        errorElement.style.display = 'block';
-    }
-
-    // Example: Utility function to show success message
-    function showSuccess(message) {
-        const successElement = document.querySelector('.success-message');
-        successElement.textContent = message;
-        successElement.style.display = 'block';
-
-        // Hide success message after 3 seconds
-        setTimeout(function() {
-            successElement.style.display = 'none';
-        }, 3000);
-    }
+    // Initial fetch of dashboard data
+    fetchDashboardData();
 });
